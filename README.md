@@ -37,6 +37,24 @@ reload(my_wb_module)
 ]
 }
 ```
+#### Generating FreeCAD stubs
+
+Some of the FreeCAD work benches are provided by native libraries, and require stub files to enable code assistance.
+
+To generate the stubs:
+
+- checkout the repository freecad-stubs, `git clone https://github.com/ostr00000/freecad-stubs`, and change to the latest available tagged version:
+  - note that for FreeCAD 1.0, you should use commit `d57fd4a` as it contains fixes that allow it to parse FreeCAD 1.0 sources
+- checkout the FreeCAD source, `git clone https://github.com/FreeCAD/FreeCAD.git` from inside the `freecad-stubs` repo folder
+- enter the FreeCAD source checkout, and change to the desired branch
+- edit the file `lib/freecad_stub_gen/config.py`, and change the variable `TARGET_DIR` from `freecad_stubs` to some other name.  This is where your stub files will be generated underneath the `freecad-stubs` repo folder
+  - it is important to perform this step to avoid folder name collision, as the `freecad-stubs` repo already contains a generated stub folder
+- in your terminal, set the PYTHONPATH variable to `PYTHONPATH="freecad-stubs/lib"`.  Note this step is not in the upstream instructions for `freecad-stubs` but is necessary to avoid module import errors when generating stubs
+- go the the `freecad-stubs` *parent* directory, and run the command `python3 freecad-stubs/lib/freecad_stub_gen/__main__.py`
+- after generating the stubs, copy it to a sub-folder called `stubs` underneath your exploded AppImage FreeCAD installation; then provide the new stub directory (e.g., `/opt/FreeCAD/stubs`) as the `FREECAD_STUB_PATH` variable noted above
+  
+#### Setting the FreeCAD Python Extra Paths
+
   - in `python.analysis.extraPaths`, fill in the entire python path set from the FreeCAD python console.  You can obtain this by starting FreeCAD, going to the python console, and entering the following:
 ```
 import sys
@@ -44,18 +62,5 @@ print(sys.path)
 ```
   - you can use a text editor to reformat the path strings in a manner suitable for entry into the extraPaths variable above
     - format to get each path on its own line for viewing ease (replace ", " with ", \n" in a text editor)
-    - replace single-quite string delimiters (`) with double-quotes (")
+    - replace single-quote string delimiters (`) with double-quotes (")
     - note that this will also contain the paths to installed workbenches that are usually in the user's local folder; if you add or remove workbenches from within FreeCAD, you may need to update the paths to include the changes
-
-- Some of the FreeCAD work benches are provided by native libraries, and require stub files to enable code assistance.  To generate stubs, do the following:
-  - create a folder `freecad-stub-gen`, then change directory inside it
-  - checkout the FreeCAD source, `git clone https://github.com/FreeCAD/FreeCAD.git`
-    - inside the FreeCAD folder, use git to checkout the branch or tagged version of FreeCAD that corresponds to the version you will be using to develop your workbench
-  - checkout the repository freecad-stubs, `git clone https://github.com/ostr00000/freecad-stubs`, and change to the latest available tagged version
-    - note that you may need to install Python 3.12 or later.  If your system doesn't have Python 3.12, you can install it from the deadsnakes PPA on Ubuntu
-  - follow the directions in the freecad-stubs README to generate stubs for the native FreeCAD modules
-    - Note, that you may need to add `freecad-stubs/lib` to your PYTHONPATH - this is a step that is omitted in the README directions in the repository
-  - after generating the stubs, copy it to a sub-folder called `stubs` underneath your exploded AppImage FreeCAD installation; then provide the new stub directory (e.g., `/opt/freecad-0.21.2-appimage/stubs`) as the `FREECAD_STUB_PATH` variable noted above
-    - this is a convenience, so that the generated stubs are available in a single place for other python workbench or macro projects
- 
-- in vscode, set the interpreter path to the python binary contained in your exploded AppImage archive; while not strictly necessary, this ensures the greatest consistency with the configured libraries for type hinting
